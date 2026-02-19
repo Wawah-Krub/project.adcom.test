@@ -1,4 +1,44 @@
-<button id="btnCreate">กดเพื่อสร้างนัด (จำลอง)</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Meeting - GroupSync</title>
+    <link rel="stylesheet" href="style.css"> </head>
+<body>
+    <div class="container">
+        <h1>Create Meeting</h1>
+        <p>Schedule your group meeting in seconds</p>
 
-<script src ="script.js">
-</script>
+        <div class="meeting-types">
+            <label>Meeting Type</label>
+            <div class="type-grid">
+                <button class="type-btn active">Group Work</button>
+                <button class="type-btn">TA Meeting</button>
+                <button class="type-btn">Club Activity</button>
+                <button class="type-btn">Tutoring Session</button>
+                <button class="type-btn">Custom Type</button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="meetingName">Meeting Name</label>
+            <input type="text" id="meetingName" placeholder="e.g., Study Group Session">
+        </div>
+
+        <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" value="2026-01-10">
+        </div>
+
+        <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" value="2026-01-12">
+        </div>
+
+        <button id="btnContinue" class="btn-continue">Continue</button>
+    </div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>

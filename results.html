@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results - GroupSync</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Meeting Results</h1>
+        <p>Room ID: <span id="roomDisplay">---</span></p>
+
+        <div class="best-times-section">
+            <h2> Best Times</h2>
+        <div id="bestTimeResult">Calculating best times...</div>
+        </div>
+
+        <hr>
+
+        <div class="participants-section">
+            <h2>Participants (<span id="participantCount">0</span>)</h2>
+        <div id="participantList" class="participant-grid">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+            <button id="btnRefresh">Refresh Results</button>
+        </div>
+    </div>
+
+    <script type="module" src="results.js"></script>
+</body>
+</html>

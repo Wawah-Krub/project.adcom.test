@@ -1,22 +1,97 @@
-// --- ส่วนของหน้า index.html ---
-const btnCreate = document.getElementById('btnCreate');
-if (btnCreate) {
-btnCreate.onclick = function() {
-const mockId = "ROOM123";
-window.location.href = "vote.html?id=" + mockId;
-};
-}
+// 1. นำเข้าตัวเชื่อมต่อฐานข้อมูล (ต้องมีไฟล์ supabase-config.js อยู่ด้วย)
+import { supabase } from './supabase-config.js';
 
-// --- ส่วนของหน้า vote.html ---
+// ดึง ID ห้องจาก URL (เช่น vote.html?id=xxxx)
 const params = new URLSearchParams(window.location.search);
-const id = params.get('id');
+const roomId = params.get('id');
 const roomDisplay = document.getElementById('roomName');
 
-if (id && roomDisplay) {
-roomDisplay.innerText = id;
+// แสดง ID ห้องบนหน้าจอ
+if (roomId && roomDisplay) {
+    roomDisplay.innerText = roomId;
 }
 
-// ส่วนที่ทำให้ไฟล์ลงคอม
+// ---------------------------------------------------------
+// 2. CELL TOGGLE LOGIC (ระบบคลิกเปลี่ยนสถานะ 3 จังหวะ)
+// ---------------------------------------------------------
+const voteTable = document.getElementById('voteTable');
+
+if (voteTable) {
+    voteTable.addEventListener('click', (e) => {
+        const cell = e.target;
+
+        // ตรวจสอบว่าคลิกที่ช่องตารางที่มีคลาส vote-cell เท่านั้น
+        if (cell.tagName === 'TD' && cell.classList.contains('vote-cell')) {
+            let currentState = parseInt(cell.getAttribute('data-state')) || 0;
+
+            // คำนวณสถานะถัดไป (0 -> 1 -> 2 -> 0)
+            // 0 = ขาว (0), 1 = เขียวเข้ม (2), 2 = เขียวอ่อน (1)
+            let nextState = (currentState + 1) % 3;
+
+            cell.setAttribute('data-state', nextState);
+            cell.className = `vote-cell state-${nextState}`;
+
+            // ใส่สีตามสถานะเพื่อให้เห็นภาพชัดเจน
+            if (nextState === 1) cell.style.backgroundColor = "#006400"; // เขียวเข้ม
+            else if (nextState === 2) cell.style.backgroundColor = "#90EE90"; // เขียวอ่อน
+            else cell.style.backgroundColor = "#ffffff"; // ขาว
+        }
+    });
+}   
+
+// ---------------------------------------------------------
+// 3. SUBMIT LOGIC (บันทึกข้อมูลลง Database - อาทิตย์ที่ 3)
+// ---------------------------------------------------------
+async function submitAvailability() {
+// ดึงชื่อเล่นจาก Input
+    const nicknameInput = document.getElementById('nickname');
+    const nickname = nicknameInput ? nicknameInput.value : "";
+
+    if (!nickname || nickname.trim() === "") {
+        alert("กรุณาใส่ชื่อเล่นก่อนบันทึกนะ!");
+        return;
+    }
+
+    // รวบรวมข้อมูลคะแนนจากทุก Cell
+    const cells = document.querySelectorAll('.vote-cell');
+    let votes = {};
+
+    cells.forEach(cell => {
+        const state = parseInt(cell.getAttribute('data-state')) || 0;
+        let weight = 0;
+
+        if (state === 1) weight = 2; // เขียวเข้ม = 2 คะแนน
+        else if (state === 2) weight = 1; // เขียวอ่อน = 1 คะแนน
+
+        // ใช้ ID ของช่องเป็น Key เช่น "slot-1-9am": 2
+        votes[cell.id] = weight;
+    });
+
+    const payload = {
+        room_id: roomId,
+        participant_name: nickname,
+        availability_data: votes // ส่งก้อน JSON นี้ไป
+    };
+
+    try {
+        // ส่งข้อมูลเข้าตาราง votes ใน Supabase
+        const { error } = await supabase.from('votes').insert([payload]);
+
+        if (error) throw error;
+
+        alert("บันทึกข้อมูลโหวตสำเร็จ!");
+        // ไปหน้าสรุปผลพร้อมส่ง ID ไปด้วย
+        window.location.href = `results.html?id=${roomId}`;
+
+    } catch (err) {
+        console.error("Error saving to DB:", err.message);
+        alert("เกิดข้อผิดพลาดในการบันทึก: " + err.message);
+    }
+}
+
+// ---------------------------------------------------------
+// 4. DOWNLOAD ICS (ฟังก์ชันเดิมจากอาทิตย์ที่ 1-2)
+// ---------------------------------------------------------
 const btnDownload = document.getElementById('btnDownload');
 if (btnDownload) {
     btnDownload.onclick = function() {
@@ -27,94 +102,25 @@ if (btnDownload) {
             alert("กำลังดาวน์โหลดไฟล์...");
         } catch (error) {
             console.error(error);
-            alert("เกิดข้อผิดพลาด: " + e.message);
+            alert("เกิดข้อผิดพลาดในการโหลดไฟล์");
         }
     };
 }
 
-// 1.จัดการชื่อผู้ใช้
-//ดึงชื่อมาโชว์เมื่อเปิดเว็บ
-window.addEventListener('load', () => {
-    const savedName = localStorage.getItem('userNickname');
-    const nameInput = document.getElementById('nickname'); // ไอดีช่องกรอกชื่อจาก UI
-
-    if (savedName && nameInput) {
-        nameInput.value = savedName;
-        console.log("ดึงชื่อเล่นเดิม: " + savedName);
-    }
-});
-
-//บันทึกชื่อ (เรียกใช้ผ่าน event oninput ใน HTML)
-function saveNickname(value) {
-    localStorage.setItem('userNickname', value);
+// ผูกฟังก์ชันเข้ากับปุ่ม Submit (ใน HTML ต้องมีปุ่ม id="btnSubmit")
+const btnSubmit = document.getElementById('btnSubmit');
+if (btnSubmit) {
+    btnSubmit.onclick = submitAvailability;
 }
 
-// 2. CELL TOGGLE LOGIC (ระบบคลิกเปลี่ยนสถานะ)
-const voteTable = document.getElementById('voteTable'); // ต้องตรงกับ ID ตารางที่ UI ทำ
+// 5. บันทึกชื่อเล่นลง LocalStorage (เพื่อความสะดวกของผู้ใช้)
+const nameInput = document.getElementById('nickname');
+if (nameInput) {
+    // ดึงชื่อเดิมมาใส่ถ้ามี
+    nameInput.value = localStorage.getItem('userNickname') || "";
 
-if (voteTable) {
-    voteTable.addEventListener('click', (e) => {
-        const cell = e.target;
-
-        // ตรวจสอบว่าต้องเป็นช่องตารางที่มีคลาส vote-cell เท่านั้น
-        if (cell.tagName === 'TD' && cell.classList.contains('vote-cell')) {
-
-        // อ่านค่าสถานะปัจจุบัน (ไม่มี= 0)
-            let currentState = parseInt(cell.getAttribute('data-state')) || 0;
-
-        // คำนวณสถานะถัดไป (0 -> 1 -> 2 -> 0)
-        // 0 = ว่าง (ขาว), 1 = สะดวกมาก (เขียวเข้ม), 2 = พอได้ (เขียวอ่อน)
-            let nextState = (currentState + 1) % 3;
-
-        // อัปเดตข้อมูลกลับไปที่ Element
-            cell.setAttribute('data-state', nextState);
-
-        // เปลี่ยน Class เพื่อให้ CSS แสดงสี (state-0, state-1, state-2)
-            cell.className = `vote-cell state-${nextState}`;
-
-            console.log(`ช่อง ${cell.id} เปลี่ยนเป็นสถานะ ${nextState} `);
-        }
-    });
-}
-
-// 3.Weight calculation ข้อมูลส่งต่อให้ DB
-//รวมข้อมูลทั้งหมดในตารางแปลงเป็น JSON
-function getVotingResults() {
-    const nickname = localStorage.getItem('userNickname');
-
-    //ถ้าเพื่อนยังไม่ใส่ชื่อ
-    if (!nickname || nickname.trim() === "") {
-        alert("กรุณาใส่ชื่อเล่นก่อนบันทึกนะ!");
-        return null;
-    }
-
-    const cells = document.querySelectorAll('.vote-cell');
-    let votes = {};
-
-    cells.forEach(cell => {
-        const state = parseInt(cell.getAttribute('data-state')) || 0;
-        let weight = 0;
-
-        // แปลงสถานะเป็นคะแนน (Weight)
-        if (state === 1) weight = 2; // เขียวเข้ม = 2 คะแนน
-        else if (state === 2) weight = 1; // เขียวอ่อน = 1 คะแนน
-        // ถ้าเป็น 0 คะแนนจะเป็น 0 อยู่แล้ว
-
-        // เก็บข้อมูลโดยใช้ ID ช่องเป็น Key (เช่น "2026-02-14_0900": 2)
-        votes[cell.id] = weight;
-    });
-
-    const finalData = {
-        user: nickname,
-        votes: votes
+    // บันทึกทุกครั้งที่พิมพ์
+    nameInput.oninput = () => {
+        localStorage.setItem('userNickname', nameInput.value);
     };
-
-    console.log("สรุปข้อมูลเตรียมส่งให้คนที่ Data base:", finalData);
-    return finalData;
 }
-// สร้างปุ่มจำลองสำหรับทดสอบส่งข้อมูล ปุ่มดสอบเฉยๆ
-const testBtn = document.createElement('button');
-testBtn.innerText = "กดเพื่อเช็คคะแนนสรุป";
-testBtn.style.marginTop = "20px";
-testBtn.onclick = () => getVotingResults();
-document.body.appendChild(testBtn);
