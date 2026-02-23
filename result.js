@@ -225,32 +225,30 @@ window.selectTime = async function(datetime) {
 // -------------------
 async function renderFinalized(datetime) {
 
-  const creator = await isCreator();
+  const { data: meeting } = await supabase
+    .from("meetings")
+    .select("title")
+    .eq("id", roomId)
+    .single();
 
   const [date, time] = datetime.split(" ");
+
+  const googleLink = generateGoogleCalendarLink(
+    meeting.title,
+    date,
+    time
+  );
 
   bestTimeContainer.innerHTML = `
     <h3>✅ เวลาที่เลือกแล้ว</h3>
     <p>${formatDateTime(datetime)}</p>
-    ${
-      creator
-        ? `
-          <button onclick="window.open(
-            generateGoogleCalendarLink(
-              'GroupSync Meeting',
-              '${date}',
-              '${time}'
-            ),
-            '_blank'
-          )">
-             เปิดใน Google Calendar
-          </button>
-          <button onclick="copyShareMessage('${datetime}')">
+
+    <button onclick="window.open('${googleLink}','_blank')">
+      📅 เปิดใน Google Calendar
+    </button>
+    <button onclick="copyShareMessage('${datetime}')">
              ลิงก์ส่งให้เพื่อน
-          </button>
-        `        
-        : ""
-    }
+    </button>
   `;
 }
 
@@ -329,7 +327,7 @@ window.copyShareMessage = function(datetime) {
 
   const googleLink =
     window.generateGoogleCalendarLink(
-      "GroupSync Meeting",
+      meeting.title,
       date,
       time
     );
