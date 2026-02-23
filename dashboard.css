@@ -37,7 +37,7 @@ body {
     padding: 10px 18px;
     border: none;
     border-radius: 8px;
-    background: #4CAF50;
+    background: #5E7D4D;
     color: white;
     font-weight: bold;
     cursor: pointer;
@@ -45,7 +45,7 @@ body {
 }
 
 .create-btn:hover {
-    background: #43a047;
+    background: #46633B;
     transform: scale(1.05);
 }
 

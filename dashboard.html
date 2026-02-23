@@ -1,20 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Meetings - GroupSync</title>
+
+    <link rel="stylesheet" href="dashboard.css">
     <script type="module" src="dashboard.js"></script>
 </head>
 <body>
-    <h1>My Meetings</h1>
 
-    <div class="stats">
-        <p>Active Meetings: <span id="activeCount">0</span></p>
+    <nav class="navbar">
+        <div class="logo">📅 GroupSync</div>
+    </nav>
+
+    <div class="container">
+
+        <div class="header">
+            <h1>My Meetings</h1>
+            <button class="create-btn"
+                onclick="window.location.href='index.html'">
+                + Create New Meeting
+            </button>
+        </div>
+
+        <div class="stats-card">
+            <p>Active Meetings</p>
+            <h2 id="activeCount">0</h2>
+        </div>
+
+        <div id="meetingsContainer" class="meetings">
+            <div class="empty-state">
+                <p>🚫 No meetings yet</p>
+                <small>Create your first meeting to get started</small>
+            </div>
+        </div>
+
     </div>
 
-    <div id="meetingsContainer">
-        <p>Loading your meetings...</p>
-    </div>
-
-    <button onclick="window.location.href='index.html'">+ Create New Meeting</button>
 </body>
 </html>
