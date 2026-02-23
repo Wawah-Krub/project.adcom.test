@@ -11,6 +11,8 @@ const participantList = document.getElementById("participantList");
 const participantCount = document.getElementById("participantCount");
 const roomDisplay = document.getElementById("roomDisplay");
 
+let currentMeeting = null; // ✅ แก้ไขเพิ่มตัวแปร global
+
 if (!roomId) {
   bestTimeContainer.innerText = "ไม่พบรหัสห้องประชุม";
 } else {
@@ -54,6 +56,8 @@ async function loadResults() {
     .eq("id", roomId)
     .single();
 
+  currentMeeting = meeting; // ✅ เก็บ meeting ไว้ใช้ภายหลัง
+
   const { data: votes } = await supabase
     .from("votes")
     .select("user_name, vote_data")
@@ -61,13 +65,11 @@ async function loadResults() {
 
   displayParticipants(votes || []);
 
-  // ถ้า finalize แล้ว
   if (meeting.status === "finalized" && meeting.selected_time) {
     renderFinalized(meeting.selected_time);
     return;
   }
 
-  // ถ้ายัง voting
   if (!votes || votes.length === 0) {
     bestTimeContainer.innerHTML = "<p>ยังไม่มีการโหวต</p>";
     return;
@@ -97,7 +99,7 @@ function displayParticipants(votes) {
 }
 
 // -------------------
-// Calculate Top 3
+// Score Calculation
 // -------------------
 function buildScoreMap(votes) {
   const scoreMap = {};
@@ -132,6 +134,7 @@ function buildScoreMap(votes) {
 
   return { scoreMap, unavailableCount };
 }
+
 function applyTypeRules(type, scoreMap, unavailableCount, totalPeople) {
 
   if (type === "Group Work") {
@@ -157,10 +160,10 @@ function applyTypeRules(type, scoreMap, unavailableCount, totalPeople) {
     });
 
   }
-  // Club Activity = default (ไม่ต้องทำอะไร)
 
   return scoreMap;
 }
+
 function calculateTop3(votes, meetingType) {
 
   const totalPeople = votes.length;
@@ -179,7 +182,7 @@ function calculateTop3(votes, meetingType) {
 }
 
 // -------------------
-// Render Top 3 (Creator Only)
+// Render Top 3
 // -------------------
 function renderTop3(top3) {
 
@@ -202,7 +205,7 @@ function renderTop3(top3) {
 }
 
 // -------------------
-// Select Time (Creator Only)
+// Select Time
 // -------------------
 window.selectTime = async function(datetime) {
 
@@ -225,16 +228,10 @@ window.selectTime = async function(datetime) {
 // -------------------
 async function renderFinalized(datetime) {
 
-  const { data: meeting } = await supabase
-    .from("meetings")
-    .select("title")
-    .eq("id", roomId)
-    .single();
-
   const [date, time] = datetime.split(" ");
 
   const googleLink = generateGoogleCalendarLink(
-    meeting.title,
+    currentMeeting.title,
     date,
     time
   );
@@ -247,7 +244,7 @@ async function renderFinalized(datetime) {
       📅 เปิดใน Google Calendar
     </button>
     <button onclick="copyShareMessage('${datetime}')">
-             ลิงก์ส่งให้เพื่อน
+      ลิงก์ส่งให้เพื่อน
     </button>
   `;
 }
@@ -290,7 +287,9 @@ function setupRealtime() {
     .subscribe();
 }
 
-/*------------------google-----------*/
+// -------------------
+// Google Calendar Link
+// -------------------
 window.generateGoogleCalendarLink = function(title, date, time) {
   const [hours, minutes] = time.split(":");
 
@@ -311,15 +310,7 @@ window.generateGoogleCalendarLink = function(title, date, time) {
     "&details=Scheduled via GroupSync" +
     "&location=Online"
   );
-}
-
-window.copyGoogleLink = function(title, date, time) {
-  const link = generateGoogleCalendarLink(title, date, time);
-
-  navigator.clipboard.writeText(link).then(() => {
-    alert("คัดลอกลิงก์ Google Calendar แล้ว!");
-  });
-}
+};
 
 window.copyShareMessage = function(datetime) {
 
@@ -327,7 +318,7 @@ window.copyShareMessage = function(datetime) {
 
   const googleLink =
     window.generateGoogleCalendarLink(
-      meeting.title,
+      currentMeeting.title,
       date,
       time
     );
@@ -338,13 +329,13 @@ window.copyShareMessage = function(datetime) {
   const message =
     `📅 นัดหมาย GroupSync
 
-    🟢 คนใช้ Google Calendar:
-    ${googleLink}
+🟢 คนใช้ Google Calendar:
+${googleLink}
 
-    🔵 คนใช้ Apple / Outlook / อื่น ๆ:
-    ${icsLink}
+🔵 คนใช้ Apple / Outlook / อื่น ๆ:
+${icsLink}
 
-    กดแล้วเพิ่มเข้าปฏิทินได้เลย`;
+กดแล้วเพิ่มเข้าปฏิทินได้เลย`;
 
   navigator.clipboard.writeText(message)
     .then(() => alert("คัดลอกข้อความส่งเพื่อนแล้ว!"))
