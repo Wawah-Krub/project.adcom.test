@@ -1,11 +1,12 @@
+/* =========================
+   Brownish Olive Theme
+   (Keep original table layout)
+========================= */
+
 :root {
-  --primary: #6B705C;        /* เขียวมะกอกน้ำตาล */
-  --primary-dark: #4F553F;   /* ตอน hover */
-  --primary-light: #A5A58D;  /* อ่อน */
-  --background: #F5F3EF;
-  --background-soft: #EAE7DC;
-  --card-bg: #FFFFFF;
-  --text-dark: #3A3A32;
+  --primary: #6B705C;
+  --primary-dark: #4F553F;
+  --primary-light: #A5A58D;
 }
 
 /* Reset */
@@ -17,48 +18,23 @@
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
-  background: linear-gradient(135deg, var(--background), var(--background-soft));
+  background: linear-gradient(135deg, #F5F3EF, #EAE7DC);
   display: flex;
   justify-content: center;
   padding: 40px 16px;
-  color: var(--text-dark);
 }
 
 /* Main Card */
 .container {
   width: 100%;
   max-width: 900px;
-  background: var(--card-bg);
+  background: white;
   padding: 30px;
   border-radius: 16px;
   box-shadow: 0 15px 40px rgba(0,0,0,0.08);
 }
 
-/* Title */
-h1 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 30px;
-}
-
-/* Labels */
-label {
-  margin-top: 16px;
-  display: block;
-  font-weight: 600;
-}
-
 /* Inputs */
-input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 6px;
-  font-size: 15px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  transition: 0.2s;
-}
-
 input:focus {
   outline: none;
   border-color: var(--primary);
@@ -68,30 +44,64 @@ input:focus {
 /* Buttons */
 button,
 .btn-primary {
-  width: 100%;
-  padding: 14px;
-  margin-top: 24px;
-  font-size: 16px;
-  font-weight: bold;
   background: var(--primary);
   color: white;
   border: none;
   border-radius: 12px;
-  cursor: pointer;
+  font-weight: bold;
   transition: 0.25s ease;
-  box-shadow: 0 6px 18px rgba(107,112,92,0.25);
 }
 
 button:hover,
 .btn-primary:hover {
   background: var(--primary-dark);
-  transform: translateY(-2px);
 }
 
-/* Voting Table */
+/* =========================
+   ORIGINAL TABLE STYLE
+   (Restored)
+========================= */
+
+.voting-container {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+#votingTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
 #votingTable thead {
-  background: var(--primary);
+  background: #2c3e50; /* เดิมของคุณ */
   color: white;
+}
+
+#votingTable th {
+  padding: 14px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+#votingTable td {
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  border-bottom: 1px solid #eee;
+}
+
+#votingTable td:hover {
+  background: #f1f5f9;
+}
+
+/* Voting states */
+.vote-cell.state-0 {
+  background: white;
 }
 
 .vote-cell.state-2 {
