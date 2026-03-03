@@ -131,19 +131,30 @@ function attachVotingLogic() {
 // รันฟังก์ชันหลัก
 initVotingPage();
 
-function copyInviteLink() {
-  // ดึง URL ปัจจุบันของหน้านี้ (ที่มี ?id=... ติดมาด้วย)
+async function copyInviteLink() {
   const currentUrl = window.location.href;
 
-  // ใช้คำสั่งก๊อปปี้ลง Clipboard
-  navigator.clipboard
-    .writeText(currentUrl)
-    .then(() => {
-      alert("ก๊อปปี้ลิงก์เชิญเพื่อนแล้ว! ส่งให้เพื่อนโหวตได้เลย");
-    })
-    .catch(err => {
-      console.error("Error in copying: ", err);
-    });
+  // ✅ ถ้ารองรับ Web Share API (มือถือส่วนใหญ่รองรับ)
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: "GroupSync - Vote for Meeting",
+        text: "เข้ามาโหวตเวลานัดหมายกัน 👇",
+        url: currentUrl
+      });
+    } catch (err) {
+      console.error("Share cancelled or failed:", err);
+    }
+  } 
+  // ❌ ถ้าไม่รองรับ (เช่น Desktop บาง browser)
+  else {
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      alert("ลิงก์ถูกคัดลอกแล้ว! ส่งให้เพื่อนได้เลย 🎉");
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  }
 }
 
 // ผูกฟังก์ชันกับปุ่ม (ถ้าคุณมีปุ่ม Share ใน HTML)

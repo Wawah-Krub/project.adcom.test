@@ -1,5 +1,11 @@
 import { supabase } from './supabase-config.js';
 
+const { data } = await supabase.auth.getSession();
+
+if (!data.session) {
+    window.location.href = "login.html";
+}
+
 // 1. โลจิคเลือกประเภทการประชุม (Toggle Active State)
 const typeButtons = document.querySelectorAll('.type-btn');
 let selectedType = "Group Work";
@@ -18,13 +24,22 @@ typeButtons.forEach(btn => {
 const btnContinue = document.getElementById('btnContinue');
 
 btnContinue.addEventListener('click', async () => {
+
     const name = document.getElementById('meetingName').value;
     const start = document.getElementById('startDate').value;
     const end = document.getElementById('endDate').value;
 
-    // Error Handling: ตรวจสอบข้อมูลก่อนส่ง
     if (!name || !start || !end) {
         alert("Please fill in all fields!");
+        return;
+    }
+
+    // ✅ ดึง user ที่ login อยู่
+    const { data: userData } = await supabase.auth.getUser();
+
+    if (!userData.user) {
+        alert("Please login first");
+        window.location.href = "login.html";
         return;
     }
 
@@ -32,17 +47,15 @@ btnContinue.addEventListener('click', async () => {
         title: name,
         type: selectedType,
         dates: { start: start, end: end },
+        user_id: userData.user.id   // 👈 เพิ่มบรรทัดนี้
     };
 
-    try {
-        // ส่งข้อมูลเข้าตาราง 'rooms' ใน Supabase
-        const { data, error } = await supabase
-            .from('meetings')
-            .insert([meetingData])
-            .select();
+    const { data, error } = await supabase
+        .from('meetings')
+        .insert([meetingData])
+        .select();
 
-        if (error) throw error;
-
+    try{
         // เมื่อบันทึกสำเร็จ ให้ย้ายไปหน้า Dashboard พร้อมรหัสห้อง
         if (data && data.length > 0) {
         window.location.href = `vote.html?id=${data[0].id}`;
