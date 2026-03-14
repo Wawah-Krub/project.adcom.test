@@ -91,3 +91,17 @@ async function saveRoomToDatabase() {
         
         }]);
 }
+
+// ดึงปุ่มทั้งหมดมาสร้าง Event การคลิก
+document.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', function() {
+        // 1. เช็กก่อนว่าปุ่มที่กด "ไม่ใช่" ปุ่ม Continue (เพราะปุ่มนั้นกดแล้วไปหน้าอื่น ไม่ต้องค้างสี)
+        if (this.id === 'continue-btn') return;
+
+        // 2. ลบสีจากปุ่มอื่นออกให้หมด
+        document.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+        
+        // 3. เติมสีให้ปุ่มที่เพิ่งกดค้างไว้
+        this.classList.add('selected');
+    });
+});

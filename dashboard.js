@@ -1,12 +1,7 @@
-// --- หน้า dashboard.html (My Meetings) ---
+// --- หน้า dashboard.js ---
 import { supabase } from './supabase-config.js';
 
-const { data } = await supabase.auth.getSession();
-if (!data.session) {
-    window.location.href = "login.html"; // ถ้าไม่มี session ให้ไล่กลับไปหน้า login
-}
-
-// --- 1. ตรวจสอบการเข้าถึง (Access Control) ---
+// --- 1. ตรวจสอบการเข้าถึง และเริ่มทำงาน ---
 async function initializeDashboard() {
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
@@ -15,18 +10,22 @@ async function initializeDashboard() {
         return;
     }
 
-    const userId = session.user.id; // เก็บ ID ของผู้ใช้ปัจจุบันไว้
+    const userId = session.user.id; 
     console.log("Logged in as:", session.user.email);
 
-    // เริ่มโหลดข้อมูลห้องประชุม
+    // เริ่มโหลดข้อมูลครั้งแรก
     loadMyMeetings(userId);
+    
+    // เริ่มระบบ Realtime (อัปเดตอัตโนมัติ)
+    startRealtime(userId);
 }
 
+// --- 2. ฟังก์ชันโหลดข้อมูล ---
 async function loadMyMeetings(userId) {
-    // ดึง Element จาก HTML
-    const activeContainer = document.getElementById('activeMeetings'); 
+    const activeCountEl = document.getElementById('activeCount');
+    const activeContainer = document.getElementById('activeMeetings'); // เช็กว่าใน HTML มี ID นี้ไหม
     const completedContainer = document.getElementById('completedMeetings');
-    const mainContainer = document.getElementById('meetingsContainer'); // สำหรับกรณีไม่มีห้องเลย
+    const mainContainer = document.getElementById('meetingsContainer');
 
     try {
         const { data: rooms, error } = await supabase
@@ -37,19 +36,25 @@ async function loadMyMeetings(userId) {
 
         if (error) throw error;
 
-        // 1. ถ้าไม่มีข้อมูลเลย ให้แสดงข้อความว่างเปล่าใน Container หลัก
+        // กรณีไม่มีข้อมูลเลย
         if (!rooms || rooms.length === 0) {
-            mainContainer.innerHTML = `<div class="empty-state"><p>ยังไม่มีห้องประชุมที่คุณสร้างไว้</p></div>`;
+            if (activeCountEl) activeCountEl.innerText = "0";
+            if (mainContainer) {
+                mainContainer.innerHTML = `<div class="empty-state"><p>ยังไม่มีห้องประชุมที่คุณสร้างไว้</p></div>`;
+            }
             return;
         }
 
-        // 2. แยกกลุ่มข้อมูลตาม Status
-        const activeRooms = rooms.filter(r => r.status === 'open' || !r.status); // รวมค่าว่างให้เป็น open
+        // แยกกลุ่มข้อมูลตาม Status
+        const activeRooms = rooms.filter(r => r.status === 'open' || !r.status);
         const completedRooms = rooms.filter(r => r.status === 'finalized' || r.status === 'completed');
 
-        // ใส่ไว้หลังจากที่ filter ข้อมูลแล้ว
-        document.getElementById('activeCount').innerText = activeRooms.length;
-        // 3. ฟังก์ชันสร้าง HTML Card
+        // อัปเดตตัวเลข Active Meetings
+        if (activeCountEl) {
+            activeCountEl.innerText = activeRooms.length;
+        }
+
+        // ฟังก์ชันสร้าง HTML Card
         const createCardHTML = (room, isCompleted) => `
             <div class="meeting-card ${isCompleted ? 'completed' : ''}">
                 <div class="card-header">
@@ -71,7 +76,7 @@ async function loadMyMeetings(userId) {
             </div>
         `;
 
-        // 4. นำข้อมูลไปใส่ในแต่ละ Container
+        // นำข้อมูลลง Container
         if (activeContainer) {
             activeContainer.innerHTML = activeRooms.length > 0 
                 ? activeRooms.map(r => createCardHTML(r, false)).join('') 
@@ -84,30 +89,43 @@ async function loadMyMeetings(userId) {
                 : '<p class="empty-text">ไม่มีรายการที่สรุปผลแล้ว</p>';
         }
 
-        // ซ่อนตัว Container หลักถ้ามีการแยกส่วนแล้ว
-        if (mainContainer) mainContainer.style.display = 'none';
+        // ซ่อนข้อความ Loading
+        if (mainContainer && rooms.length > 0) {
+             // ถ้าคุณต้องการซ่อน mainContainer เมื่อมีข้อมูลในกล่องแยก ให้เปิดบรรทัดล่าง
+             // mainContainer.style.display = 'none'; 
+        }
 
     } catch (err) {
         console.error("Error loading meetings:", err.message);
-        if (mainContainer) mainContainer.innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${err.message}</p>`;
     }
 }
-// --- 3. ระบบ Logout ---
+
+// --- 3. ระบบ Realtime ---
+function startRealtime(userId) {
+    supabase
+      .channel('rooms-follow')
+      .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'rooms',
+          filter: `creator_id=eq.${userId}` // ตามเฉพาะห้องที่เราเป็นเจ้าของ
+      }, (payload) => {
+          console.log('Change detected:', payload);
+          loadMyMeetings(userId); // โหลดใหม่ทันที
+      })
+      .subscribe();
+}
+
+// --- 4. ระบบ Logout ---
 const logoutBtn = document.getElementById("logoutBtn");
 if (logoutBtn) {
     logoutBtn.onclick = async () => {
         if (!confirm("คุณต้องการออกจากระบบใช่หรือไม่?")) return;
-        
-        try {
-            await supabase.auth.signOut();
-            localStorage.clear();
-            window.location.replace("login.html");
-        } catch (err) {
-            console.error("Logout error:", err);
-            window.location.replace("login.html");
-        }
+        await supabase.auth.signOut();
+        localStorage.clear();
+        window.location.replace("login.html");
     };
 }
 
-// รันฟังก์ชันหลักเมื่อโหลดหน้า
+// เริ่มการทำงาน
 initializeDashboard();

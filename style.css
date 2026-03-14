@@ -13,19 +13,46 @@
   padding: 40px 16px;
 }*/
 
-body {
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* สำคัญ: ทำให้ width 100% รวม padding แล้วไม่ล้น */
+}
+
+body {
     font-family: 'Segoe UI', sans-serif;
     background: #f4f6f9;
 }
 
-/* Main Container */
+/* Navbar เต็มหน้าจอ */
+.navbar {
+    background: #272004;
+    color: white;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    width: 100%; /* กว้างเต็มจอ */
+    display: block;
+}
+
+/* จัดระยะห่างเนื้อหาใน Nav (ถ้ามีหลายอย่าง) */
+.nav-content {
+    max-width: 900px; /* ให้ข้อความตรงกับ Container ด้านล่าง */
+    margin: 0 auto;
+}
+
+/* Container ส่วนเนื้อหา */
 .container {
     max-width: 900px;
     margin: 40px auto;
     padding: 0 20px;
 }
 
+/* สีปุ่มตอนถูกเลือก (Selected) */
+button.selected {
+    background-color: #6B705C !important;
+    color: white;
+}
 
 /* Main Card */
 /*.container {
@@ -88,8 +115,6 @@ button:hover {
   color: white;
   transform: scale(1.05);
 }
-
-
 
 /* Voting cells */
 .cell {

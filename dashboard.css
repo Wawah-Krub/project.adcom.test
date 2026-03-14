@@ -205,5 +205,5 @@ body {
 }
 
 /* ตกแต่ง Badge */
-.badge-active { background-color: #ef4444; color: white; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; }
-.badge-done { background-color: #10b981; color: white; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; }
+.badge-active { background-color: #ec9393; color: white; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; }
+.badge-done { background-color: #67c9a8; color: white; padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; }
