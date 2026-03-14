@@ -1,51 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Meeting - GroupSync</title>
-    <link rel="stylesheet" href="style.css"> </head>
+  <meta charset="UTF-8">
+  <title>Login - GroupSync</title>
+  <link rel="stylesheet" href="style.css">
+</head>
 <body>
+  <div class="navbar">Wangmai</div>
+  <div class="container">
 
-    <div class="navbar">Wangmai</div>
-    <div class="container">
+    <h1>Login</h1>
 
-        <h1>Create Meeting</h1>
-        <p>Schedule your group meeting in seconds</p>
-        
-
-        <div class="meeting-types">
-            <label>Meeting Type</label>
-            <div class="type-grid">
-                <button class="type-btn active">Group Work</button>
-                <button class="type-btn">TA Meeting</button>
-                <button class="type-btn">Club Activity</button>
-                <button class="type-btn">Tutoring Session</button>
-
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label for="meetingName">Meeting Name</label>
-            <input type="text" id="meetingName" placeholder="e.g., Study Group Session">
-        </div>
-
-        <div class="form-group">
-            <label for="startDate">Start Date</label>
-            <input type="date" id="startDate" >
-        </div>
-
-        <div class="form-group">
-            <label for="endDate">End Date</label>
-            <input type="date" id="endDate" >
-        </div>
-
-        <label>จำนวนคนที่ต้องการนัดหมาย (รวมตัวเอง):</label>
-        <input type="number" id="requiredVoters" value="1" min="1">
-        
-        <button id="btnContinue" class="btn-continue">Continue</button>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Enter your email">
     </div>
 
-    <script type="module" src="index.js"></script>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter password">
+    </div>
+
+    <button id="btnLogin" class="btn-primary">Login</button>
+    <button id="btnSignup" class="btn-primary">Sign Up</button>
+
+  </div>
+
+  <script type="module" src="login.js"></script>
 </body>
 </html>
