@@ -24,7 +24,7 @@
 
             try {
                 // ดึงข้อมูลจากตาราง (ลองเช็คว่าใน DB ชื่อ rooms หรือ meetings)
-                const { data, error } = await sb.from("rooms").select("*").eq("id", id).single();
+                const { data, error } = await _supabase.from("rooms").select("*").eq("id", id).single();
                 
                 if (error || !data) throw new Error("ไม่พบข้อมูล");
 
