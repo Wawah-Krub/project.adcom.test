@@ -425,9 +425,10 @@ window.copyShareMessage = async function(datetime) {
       date,
       time
     );
-  const projectPath = window.location.pathname.split('/')[1];
+  const currentPath = window.location.pathname;
+  const basePath = path.substring(0, currentPath.lastIndexOf('/'));
   const icsLink =
-    `${window.location.origin}/${projectPath}/ics.html?id=${roomId}`;
+    `${window.location.origin}${basePath}/ics.html?id=${roomId}`;
     
 
   const message =
