@@ -84,17 +84,17 @@ function renderGrid(dateList) {
 
     dateList.forEach(date => {
       const dateISO = date.toISOString().split('T')[0];
+      const slotId = `slot-${dateISO}-${time}`; // สร้าง ID เฉพาะตัว
 
-      // สร้างช่องโหวตพร้อมเก็บข้อมูลเวลาและวันที่ไว้ใน Dataset
       bodyHTML += `
-        <td class="vote-cell state-0"
+        <td id="${slotId}" 
+            class="vote-cell state-0"
             data-state="0"
             data-time="${time}"
             data-date="${dateISO}">
         </td>
       `;
     });
-
     bodyHTML += '</tr>';
   });
 
@@ -208,3 +208,84 @@ if (btnSubmit) {
   btnSubmit.onclick = submitAvailability;
 }
 
+// 1. ฟังก์ชันโหลดข้อมูลโหวตและระบายสีตาราง
+async function refreshVoteTable(roomId) {
+    const { data: allVotes, error } = await supabase
+        .from('votes') 
+        .select('*')
+        .eq('meeting_id', roomId);
+
+    if (error) return;
+
+    // 1. ล้าง Class ของคนอื่นออกก่อน (แต่เก็บ Class ที่เรากดเองไว้)
+    // หมายเหตุ: ถ้าคุณอยากให้ Realtime มันทับกันไปเลย ให้ล้างหมดครับ
+    document.querySelectorAll('.vote-cell').forEach(cell => {
+        cell.classList.remove('voted-other', 'state-1', 'state-2');
+        // คืนค่า state-0 (สีขาว) ให้ช่องที่ไม่มีใครโหวต
+        if (!cell.getAttribute('data-my-choice')) { 
+            cell.classList.add('state-0');
+        }
+    });
+
+    // 2. วนลูปข้อมูลโหวตของทุกคน (รวมถึงเพื่อนด้วย)
+    allVotes.forEach(userVote => {
+        const data = userVote.vote_data; 
+        
+        for (const date in data) {
+            for (const time in data[date]) {
+                const stateFromDB = data[date][time];
+                
+                if (stateFromDB > 0) { 
+                    const targetId = `slot-${date}-${time}`;
+                    const cell = document.getElementById(targetId);
+                    
+                    if (cell) {
+                        // ระบายสีตาม State ที่เพื่อนส่งมา (1 หรือ 2)
+                        cell.classList.remove('state-0');
+                        cell.classList.add(`state-${stateFromDB}`);
+                        cell.classList.add('voted-other'); // ใส่ไว้เผื่อแยก CSS
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 2. ตั้งค่า Realtime ให้หน้าโหวต
+function setupVoteRealtime(roomId) {
+    supabase
+        .channel('live-votes')
+        .on(
+            'postgres_changes', 
+            { 
+                event: 'INSERT', 
+                schema: 'public', 
+                table: 'votes', 
+                filter: `meeting_id=eq.${roomId}` // เปลี่ยนเป็น meeting_id
+            }, 
+            (payload) => {
+                console.log('เพื่อนโหวตใหม่!', payload.new);
+                refreshVoteTable(roomId); 
+            }
+        )
+        .subscribe();
+}
+
+// เรียกใช้งานตอนโหลดหน้า
+refreshVoteTable(roomId); // โหลดครั้งแรก
+setupVoteRealtime(roomId); // เปิดระบบดักฟัง Realtime
+
+async function handleVote(slotId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    await supabase
+        .from('votes')
+        .insert([{
+            meeting_id: roomId,
+            slot_id: slotId,
+            user_id: user.id,
+        }]);
+    
+    // ไม่ต้องสั่ง render() เองตรงนี้ก็ได้ 
+    // เพราะ Realtime Subscription จะตรวจเจอแล้วสั่ง render ให้เราเองอัตโนมัติ!
+}
