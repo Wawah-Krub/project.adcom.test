@@ -2,56 +2,88 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add to Calendar</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/file-saver.js/2.0.5/FileSaver.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/nwcell/ics.js/ics.deps.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/nwcell/ics.js/ics.min.js"></script>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h2 id="status">📅 กำลังเตรียมไฟล์นัดหมาย...</h2>
-    <p id="msg">ระบบจะดาวน์โหลดไฟล์ปฏิทินให้คุณอัตโนมัติ</p>
+<body style="font-family: sans-serif; text-align: center; padding: 50px; background-color: #f4f7f6;">
+    <div style="background: white; padding: 30px; border-radius: 20px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <h2 id="status">📅 กำลังเตรียมไฟล์นัดหมาย...</h2>
+        <p id="msg">หากเครื่องไม่ดาวน์โหลดอัตโนมัติ ให้กดปุ่มด้านล่าง</p>
+        <button id="dlBtn" style="display:none; background:#007AFF; color:white; border:none; padding:12px 25px; border-radius:10px; font-size:16px; cursor:pointer;">ดาวน์โหลดไฟล์อีกครั้ง</button>
+    </div>
 
     <script>
-    const supabaseUrl = 'https://rrcvjagvsixepvyopuuy.supabase.co'
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyY3ZqYWd2c2l4ZXB2eW9wdXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDM4MTksImV4cCI6MjA4ODM3OTgxOX0.A96E4dXZI2b_EX4CAbW84RI2mkotlqKHAN6FnST5wus';
-
-    const _supabase = supabase.createClient(supabaseUrl, supabaseKey)
-
-        async function downloadNow() {
-            const id = new URLSearchParams(window.location.search).get("id");
-            if (!id) { document.getElementById('status').innerText = "❌ ไม่พบรหัส"; return; }
-
-            try {
-                // ดึงข้อมูลจากตาราง (ลองเช็คว่าใน DB ชื่อ rooms หรือ meetings)
-                const { data, error } = await _supabase.from("rooms").select("*").eq("id", id).single();
-                
-                if (error || !data) throw new Error("ไม่พบข้อมูล");
-
-                const title = data.meeting_name || data.title || "GroupSync Meeting";
-                const time = data.selected_time;
-
-                if (!time) {
-                    document.getElementById('status').innerText = "⚠️ ยังไม่มีเวลาที่สรุป";
-                    return;
-                }
-
-                // สมมติ time คือ "2026-03-18 09:00"
-                const parts = time.split(/[- :]/); // แยกปี เดือน วัน ชั่วโมง นาที
-                // เดือนใน JS เริ่มที่ 0 ดังนั้นต้อง -1
-                const startDate = new Date(parts[0], parts[1]-1, parts[2], parts[3], parts[4]);
-                const endDate = new Date(startDate.getTime() + (60 * 60 * 1000)); // บวก 1 ชม.
-
-                const cal = ics();
-                cal.addEvent(title, "นัดหมาย", "Online", startDate, endDate);
-                cal.download(title);
-
-                document.getElementById('status').innerText = "✅ ดาวน์โหลดสำเร็จ!";
-            } catch (e) {
-                document.getElementById('status').innerText = "❌ ผิดพลาด: " + e.message;
+    // --- 1. ฟังก์ชันสร้างไฟล์ ICS (ฉบับแก้ไขเพื่อ iOS) ---
+    const ics = function() {
+        return {
+            Command: "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nMETHOD:PUBLISH\r\nPRODID:-//GroupSync//NONSGML v1.0//EN\r\n",
+            Events: [],
+            addEvent: function(subject, description, location, begin, end) {
+                const format = (d) => d.getFullYear() + ("00" + (d.getMonth() + 1)).slice(-2) + ("00" + d.getDate()).slice(-2) + "T" + ("00" + d.getHours()).slice(-2) + ("00" + d.getMinutes()).slice(-2) + ("00" + d.getSeconds()).slice(-2);
+                const s = format(new Date(begin)), c = format(new Date(end));
+                const u = ["BEGIN:VEVENT", "UID:" + Date.now() + "@groupsync", "DTSTAMP:" + s + "Z", "DTSTART:" + s, "DTEND:" + c, "SUMMARY:" + subject, "DESCRIPTION:" + description, "LOCATION:" + location, "END:VEVENT"].join("\r\n");
+                this.Events.push(u);
+            },
+            download: function(filename) {
+                const content = this.Command + this.Events.join("\r\n") + "\r\nEND:VCALENDAR";
+                const blob = new Blob([content], { type: "text/calendar;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = filename + ".ics";
+                document.body.appendChild(a); a.click();
+                document.body.removeChild(a);
             }
+        };
+    };
+
+    // --- 2. ตั้งค่า Supabase ---
+    const supabaseUrl = 'https://rrcvjagvsixepvyopuuy.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyY3ZqYWd2c2l4ZXB2eW9wdXV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4MDM4MTksImV4cCI6MjA4ODM3OTgxOX0.A96E4dXZI2b_EX4CAbW84RI2mkotlqKHAN6FnST5wus';
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // --- 3. ดึงข้อมูลและรัน ---
+    async function downloadNow() {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id) { document.getElementById('status').innerText = "❌ ไม่พบรหัส"; return; }
+
+        try {
+            const { data, error } = await _supabase.from("rooms").select("*").eq("id", id).single();
+            if (error || !data) throw new Error("ไม่พบข้อมูล");
+
+            const title = data.title || "GroupSync Meeting";
+            const time = data.selected_time;
+
+            if (!time) {
+                document.getElementById('status').innerText = "⚠️ ยังไม่มีเวลาที่สรุป";
+                return;
+            }
+
+            // จัดการเรื่องวันที่
+            const parts = time.split(/[- :]/);
+            const startDate = new Date(parts[0], parts[1]-1, parts[2], parts[3], parts[4]);
+            const endDate = new Date(startDate.getTime() + (60 * 60 * 1000));
+
+            const cal = ics();
+            const doDownload = () => {
+                cal.addEvent(title, "นัดหมายจาก GroupSync", "Online", startDate, endDate);
+                cal.download(title);
+            };
+
+            // ดาวน์โหลดอัตโนมัติ
+            doDownload();
+
+            // แสดงปุ่มเผื่อไว้
+            const btn = document.getElementById('dlBtn');
+            btn.style.display = 'inline-block';
+            btn.onclick = doDownload;
+
+            document.getElementById('status').innerText = "✅ พร้อมดาวน์โหลดแล้ว";
+        } catch (e) {
+            document.getElementById('status').innerText = "❌ ผิดพลาด: " + e.message;
         }
-        downloadNow();
+    }
+    downloadNow();
     </script>
 </body>
 </html>
