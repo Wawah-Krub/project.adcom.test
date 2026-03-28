@@ -79,7 +79,7 @@ async function loadResults() {
   // 3. แสดงรายชื่อคนโหวตและ Progress Bar
   displayParticipants(votes || []);
   renderProgressBar(votes.length, meeting.required_voters || 1, meeting.status);
-  
+
   // 4. เช็คสถานะ: ถ้าสรุปผลแล้ว (Finalized)
   if (meeting.status === "finalized" && meeting.selected_time) {
     renderFinalized(meeting.selected_time);
@@ -136,6 +136,7 @@ function renderProgressBar(current, target, meetingStatus) { // เพิ่ม 
       </button>
     `;
   }
+  statusEl.innerHTML = html;
 }
 
 // -------------------
