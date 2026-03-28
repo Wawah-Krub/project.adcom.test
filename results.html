@@ -10,16 +10,19 @@
     <div class="navbar">Wangmai</div>
 
     <div class="container">
-        <h1>Meeting Results</h1>
-        <p style="display: none;">Room id: <span id="roomDisplay">---</span></p>
+        <div class="section-card">
+            <h1>Meeting Results</h1>
+            <p style="display: none;">Room id: <span id="roomDisplay">---</span></p>
+        
 
         <div class="best-times-section">
             <h2> Best Times</h2>
         <div id="bestTimeResult">Calculating best times...</div>
         </div>
+        </div>
 
         <hr>
-
+        <div class="section-card">
         <div class="participants-section">
             <h2>Participants (<span id="participantCount">0</span>)</h2>
         <div id="participantList" class="participant-grid">
@@ -31,7 +34,7 @@
         <div class="actions">
             <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
         </div>
-
+        </div>
     </div>
     
     <script type="module" src="result.js"></script>

@@ -7,8 +7,23 @@
 }
 
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f4f6f9;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: #f8f9fa; /* สีเทาอ่อนมาก ช่วยให้การ์ดดูเด่น */
+    color: #333;
+}
+
+.section-card {
+    background: white;
+    border-radius: 16px; /* ความโค้งมน */
+    padding: 24px;
+    margin-bottom: 20px; /* ระยะห่างระหว่างกล่อง */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* เงาบางๆ ให้ดูเป็นมิติ */
+    border: 1px solid #edf0f2; /* เส้นขอบจางๆ */
+}
+.container {
+    max-width: 800px; /* กระชับพื้นที่ให้ดูเหมือนแอปมากขึ้น */
+    margin: 40px auto;
+    padding: 0 20px;
 }
 
 /* Navbar เต็มหน้าจอ */
