@@ -131,7 +131,7 @@ function renderProgressBar(current, target, meetingStatus) { // เพิ่ม 
   if (meetingStatus !== "finalized" && current >= target) {
     statusEl.innerHTML += `
       <p style="color: green; font-size: 0.9em; margin-top:5px;">⭐ ครบจำนวนแล้ว! เลือกเวลาสรุปได้เลย</p>
-      <button onclick="copyToClipboard()" style="margin-top:10px; padding:8px 15px; border-radius:8px; cursor:pointer;">
+      <button onclick="copyVoteLink(this)" style="margin-top:10px; padding:8px 15px; border-radius:8px; cursor:pointer;">
         🔗 คัดลอกลิงก์ส่งให้เพื่อนมาโหวต
       </button>
     `;
