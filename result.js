@@ -80,6 +80,16 @@ async function loadResults() {
   displayParticipants(votes || []);
   renderProgressBar(votes.length, meeting.required_voters || 1, meeting.status);
 
+  // --- แทรกโค้ดจัดการปุ่มคัดลอกตรงนี้ ---
+  const copyBtn = document.getElementById("btnCopyVoteLink"); 
+  if (copyBtn) {
+      if (meeting.status === "finalized") {
+          copyBtn.style.display = "none"; // ถ้าสรุปแล้ว ซ่อนปุ่ม
+      } else {
+          copyBtn.style.display = "block"; // ถ้ายังไม่สรุป โชว์ปุ่ม
+      }
+  }
+
   // 4. เช็คสถานะ: ถ้าสรุปผลแล้ว (Finalized)
   if (meeting.status === "finalized" && meeting.selected_time) {
     renderFinalized(meeting.selected_time);
