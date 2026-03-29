@@ -15,12 +15,15 @@ body {
 }
 
 /* Main Container */
-.container {
-    max-width: 900px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
 
+.container {
+    display: flex;
+    flex-direction: column; /* เรียงจากบนลงล่างเป็นหลัก */
+    align-items: center;
+    padding: 15px;
+    width: 100%;
+    box-sizing: border-box; /* ป้องกัน Padding ดันขอบจนล้น */
+}
 
 
 /* Header */
