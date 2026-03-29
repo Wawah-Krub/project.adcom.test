@@ -227,3 +227,122 @@ button:hover {
     background-color: #fff;
     box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
   }
+
+/* กล่องแจ้งเตือนสถานะรอ (Waiting Card) */
+.waiting-card {
+    text-align: center;
+    padding: 30px 20px;
+    background-color: #fcfcfc;
+    border: 1px dashed #ddd; 
+    border-radius: 20px;
+    margin: 20px 0;
+}
+
+.waiting-card .icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.waiting-card .status-text {
+    color: #444;
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin: 5px 0;
+}
+
+.waiting-card .vote-count {
+    color: #999;
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 8px;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+.waiting-card .icon {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* --- ส่วนการแสดงผลสถานะการโหวต (Vote Status) --- */
+
+.vote-status-container {
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
+
+.vote-status-text {
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #4b4e41; /* โทนเดียวกับธีมหลัก */
+    font-size: 1rem;
+}
+
+/* โครงของ Progress Bar */
+.progress-bar-bg {
+    width: 100%;
+    background: #edf0f2;
+    border-radius: 20px;
+    height: 12px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    border: 1px solid #e1e4e6;
+}
+
+/* ตัวแถบสีที่วิ่ง (ใช้สีเขียวธีมหลัก) */
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6B705C, #8a8f7a);
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ข้อความแจ้งเตือนเมื่อโหวตครบ */
+.complete-badge {
+    color: #465402; /* สีเดียวกับปุ่ม .green ที่คุณตั้งไว้ */
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(70, 84, 2, 0.05);
+    border-radius: 8px;
+}
+
+/* ปุ่มคัดลอกลิงก์ (ปรับให้เข้ากับสไตล์ Border-radius ของคุณ) */
+.btn-copy-link {
+    width: auto; /* ไม่ต้องเต็มความกว้างเหมือนปุ่มหลัก */
+    display: inline-block;
+    margin-top: 12px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 2px solid #6B705C;
+    background: white;
+    color: #6B705C;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-copy-link:hover {
+    background: #6B705C;
+    color: white;
+    transform: translateY(-2px); /* ให้ความรู้สึกนูนขึ้นเล็กน้อย */
+}
+
+/* ปรับปรุง CSS ของ Waiting Card ให้เข้ากับสีฟอนต์ใหม่ */
+.waiting-card {
+    border: 2px dashed #6B705C; /* ใช้สีหลักแทนสีเทา */
+    background-color: #fdfdfb;
+}
+
+.waiting-card .status-text {
+    color: #6B705C;
+    font-weight: 600;
+}

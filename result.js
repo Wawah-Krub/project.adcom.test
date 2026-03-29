@@ -111,10 +111,10 @@ async function loadResults() {
   } else {
     // ถ้าเป็นเพื่อน: ให้โชว์ข้อความรอเจ้าของสรุป 
     bestTimeContainer.innerHTML = `
-      <div style="text-align:center; padding: 20px; background: #f9f9f9; border-radius: 15px;">
-        <p style="font-size: 1.2em;">⏳</p>
-        <p style="color:#666; margin:0;">รอผู้สร้างเลือกเวลานัดหมาย...</p>
-        <small style="color:#999;">(ตอนนี้โหวตไปแล้ว ${votes.length} คน)</small>
+      <div class="waiting-card">
+        <span class="icon">⏳</span>
+        <p class="status-text">รอผู้สร้างเลือกเวลานัดหมาย...</p>
+        <span class="vote-count">(ตอนนี้โหวตไปแล้ว ${votes.length} คน)</span>
       </div>
     `;
   }
@@ -127,26 +127,32 @@ function renderProgressBar(current, target, meetingStatus) { // เพิ่ม 
   
   if (!statusEl) return;
 
-  // 1. วาดแถบ Progress Bar ปกติ
+  // 1. แสดง Progress Bar โดยใช้ Class
   statusEl.innerHTML = `
-    <div style="margin-bottom: 10px;">
-      <strong>สถานะการโหวต:</strong> ${current} จาก ${target} คน
-    </div>
-    <div style="width: 100%; background: #eee; border-radius: 10px; height: 15px; overflow: hidden; margin-bottom: 10px;">
-      <div style="width: ${percent}%; background: #4CAF50; height: 100%; transition: 0.5s;"></div>
-    </div>
+      <div class="vote-status-container">
+          <div class="vote-status-text">
+              สถานะการโหวต: ${current} จาก ${target} คน
+          </div>
+          <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: ${percent}%;"></div>
+          </div>
+      </div>
   `;
 
-  // 2. เช็คเงื่อนไข: ถ้ายังไม่สรุป (open) และโหวตครบแล้ว ถึงจะโชว์ข้อความและปุ่มคัดลอก
+  // 2. เช็คเงื่อนไขโหวตครบ
   if (meetingStatus !== "finalized" && current >= target) {
-    statusEl.innerHTML += `
-      <p style="color: green; font-size: 0.9em; margin-top:5px;">⭐ ครบจำนวนแล้ว! เลือกเวลาสรุปได้เลย</p>
-      <button onclick="copyVoteLink()" style="margin-top:10px; padding:8px 15px; border-radius:8px; cursor:pointer;">
-        🔗 คัดลอกลิงก์ส่งให้เพื่อนมาโหวต
-      </button>
-    `;
+      statusEl.innerHTML += `
+          <div class="complete-badge">
+              <span>⭐</span> ครบจำนวนแล้ว! เลือกเวลาสรุปได้เลย
+          </div>
+          <button class="btn-copy-link" onclick="copyVoteLink()">
+              🔗 คัดลอกลิงก์ส่งให้เพื่อน
+          </button>
+      `;
   }
 }
+
+
 
 // -------------------
 // Display Participants
@@ -209,21 +215,50 @@ function applyTypeRules(type, scoreMap, unavailableCount, totalPeople) {
 
   } else if (type === "TA Meeting") {
 
+    const taVote = votes.find(v => v.user_id === meeting.creator_id || v.user_name === "เจ้าของห้อง");
+    
     Object.keys(scoreMap).forEach(key => {
-      if (unavailableCount[key] > 0) {
-        scoreMap[key] = -9999;
-      }
+        //เช็คตัว TA ---
+        if (taVote) {
+            const taFreeTimes = taVote.vote_data.free || [];
+            if (!taFreeTimes.includes(key)) {
+                // ถ้า TA ไม่ว่าง หักไปเลย 100 แต้ม (ให้ร่วงไปท้ายตาราง)
+                scoreMap[key] -= 100;
+            }
+        }
+
+        // ช็คจำนวนนักเรียน ---
+        const missingStudents = unavailableCount[key] || 0;
+        // หักคะแนนตามจำนวนนักเรียนที่หายไป คนละ 5 แต้ม
+        scoreMap[key] -= (missingStudents * 5);
     });
 
   } else if (type === "Tutoring Session") {
 
-    Object.keys(scoreMap).forEach(key => {
-      scoreMap[key] = scoreMap[key] * 1.5;
-    });
+   const tutorVote = votes.find(v => v.user_id === meeting.creator_id || v.user_name === "เจ้าของห้อง");
+
+    if (tutorVote) {
+        // ดึงรายการเวลาที่ติวเตอร์เลือกไว้ (สมมติเก็บใน vote_data.free)
+        const tutorFreeTimes = tutorVote.vote_data.free || []; 
+
+        Object.keys(scoreMap).forEach(key => {
+            if (tutorFreeTimes.includes(key)) {
+                // ถ้าติวเตอร์ว่าง ให้คะแนนความสำคัญเป็น 3 เท่า!
+                scoreMap[key] = scoreMap[key] * 3;
+            } else {
+                // ถ้าติวเตอร์ไม่ว่าง ช่วงเวลานั้นแทบจะไร้ความหมาย (หักคะแนนหนัก)
+                scoreMap[key] = -9999;
+            }
+        });
+    } else {
+        // กรณีติวเตอร์ยังไม่ได้โหวต ให้ใช้การคูณปกติไปก่อน
+        Object.keys(scoreMap).forEach(key => {
+            scoreMap[key] = scoreMap[key] * 1.5;
+        });
+    }
 
   }
-  // Club Activity = default (ไม่ต้องทำอะไร)
-
+  
   return scoreMap;
 }
 function calculateTop3(votes, meetingType) {
@@ -517,7 +552,7 @@ window.copyShareMessage = async function(datetime) {
   const currentUrl = new URL(window.location.href);
   const pathParts = currentUrl.pathname.split('/');
   
-  // ลบชื่อไฟล์ปัจจุบันออก (เช่น results.html) แล้วแทนที่ด้วย ics.html
+  // ลบชื่อไฟล์ปัจจุบันแทนที่ด้วย ics.html
   pathParts[pathParts.length - 1] = 'ics.html';
   
   // ประกอบร่างใหม่โดยอ้างอิงจาก Origin เดิม
