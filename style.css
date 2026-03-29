@@ -28,7 +28,7 @@ body {
 
 /* Navbar เต็มหน้าจอ */
 .navbar {
-    background: #272004;
+    background: #2e3d27;
     color: white;
     padding: 15px 30px;
     font-size: 18px;
@@ -424,46 +424,51 @@ button:hover {
         padding: 15px;
     }
 }
+/* --- ปรับ Hero Container เป็นลายคลื่นน้ำ --- */
 
 .hero-container {
-    position: relative; /* สำคัญที่สุด */
-    overflow: hidden;    /* กันวงกลมล้นจอ */
+    position: relative;
+    overflow: hidden; /* สำคัญ: กันคลื่นล้นจอ */
     min-height: 80vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #ffffff;
+    
+    /* 1. สีพื้นหลังหลัก (ขาว) */
+    background-color: #ffffff;
+    
+    /* 2. สร้างลายคลื่นด้วย Gradient ซ้อนกัน */
+    background-image: 
+        /* คลื่นชั้นที่ 1 (จางที่สุด อยู่ล่างสุด) */
+        linear-gradient(135deg, rgba(107, 112, 92, 0.03) 25%, transparent 25%),
+        linear-gradient(225deg, rgba(107, 112, 92, 0.03) 25%, transparent 25%),
+        
+        /* คลื่นชั้นที่ 2 (เข้มขึ้นนิดนึง) */
+        linear-gradient(315deg, rgba(107, 112, 92, 0.05) 25%, transparent 25%),
+        linear-gradient(45deg, rgba(107, 112, 92, 0.05) 25%, transparent 25%);
+        
+    /* 3. ตั้งค่าขนาดและตำแหน่งของลาย */
+    background-size: 100px 100px; /* ขนาดของแต่ละลูกคลื่น */
+    background-position: 0 0, 0 50px, 50px -50px, -50px 0px; /* จัดตำแหน่งให้ซ้อนกันเหลื่อมๆ */
 }
 
-/* วงกลมก้อนที่ 1 */
-.circle-1 {
-    position: absolute;
-    top: -150px;
-    right: -150px;
-    width: 500px;
-    height: 500px;
-    background: radial-gradient(circle, rgba(103, 138, 113, 0.7) 0%, rgba(255, 255, 255, 0) 70%);
-    border-radius: 50%;
-    pointer-events: none; /* เพื่อให้เรายังคลิกปุ่มผ่านวงกลมได้ */
-    z-index: 1;
-}
-
-/* วงกลมก้อนที่ 2 */
-.circle-2 {
-    position: absolute;
-    bottom: -150px;
-    left: -150px;
-    width: 450px;
-    height: 450px;
-    background: radial-gradient(circle, rgba(119, 174, 129, 0.4) 0%, rgba(140, 4, 4, 0) 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 1;
+/* ปรับเนื้อหาให้อยู่เหนือคลื่น */
+.hero-content {
+    position: relative;
+    z-index: 2; /* ให้อยู่ชั้นบนสุด */
+    max-width: 650px;
+    text-align: center;
+    
+    /* เพิ่มพื้นหลังขาวจางๆ หลังข้อความ เพื่อให้อ่านง่ายขึ้น */
+    background: rgba(255, 255, 255, 0.8);
+    padding: 40px;
+    border-radius: 30px;
+    backdrop-filter: blur(5px); /* เพิ่มเอฟเฟกต์กระจกฝ้า (ถ้า Browser รองรับ) */
 }
 
 /* ดันเนื้อหาให้อยู่บนสุด */
-.hero-content {
+/*.hero-content {
     position: relative;
-    z-index: 10; /* เลขเยอะๆ ข่มวงกลมไว้ */
+    z-index: 10; /* เลขเยอะๆ ข่มวงกลมไว้
     text-align: center;
-}
+}*/
