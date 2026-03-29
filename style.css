@@ -430,25 +430,47 @@ button:hover {
     overflow: hidden;
 }
 
-/* สร้างวงกลมจางๆ ไว้ที่พื้นหลัง */
+/* ปรับตัวแม่ให้รองรับตำแหน่ง */
+.hero-container {
+    position: relative;
+    overflow: hidden; /* กันวงกลมล้นออกนอกจอ */
+    background: #ffffff; /* พื้นหลังขาวสะอาด */
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* วงกลมที่ 1: มุมขวาบน */
 .hero-container::before {
     content: "";
     position: absolute;
-    top: -10%;
-    right: -10%;
+    top: -100px;
+    right: -100px;
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(107, 112, 92, 0.05) 0%, rgba(255,255,255,0) 70%);
-    z-index: -1;
+    background: radial-gradient(circle, rgba(107, 112, 92, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%; /* บังคับเป็นวงกลม */
+    z-index: 0; /* เปลี่ยนจาก -1 เป็น 0 */
 }
 
+/* วงกลมที่ 2: มุมซ้ายล่าง */
 .hero-container::after {
     content: "";
     position: absolute;
-    bottom: -10%;
-    left: -10%;
-    width: 300px;
-    height: 300px;
-    background: radial-gradient(circle, rgba(107, 112, 92, 0.08) 0%, rgba(255,255,255,0) 70%);
-    z-index: -1;
+    bottom: -100px;
+    left: -100px;
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle, rgba(107, 112, 92, 0.12) 0%, rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+}
+
+/* สำคัญ: ดันเนื้อหาขึ้นมาอยู่เหนือวงกลม */
+.hero-content {
+    position: relative;
+    z-index: 2; 
+    max-width: 650px;
+    text-align: center;
 }
