@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Meeting - GroupSync</title>
+    <title>Create Meeting </title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="style.css"> </head>
+
 <body>
 
     <div class="navbar">Wangmai</div>
@@ -32,21 +34,23 @@
 
         <div class="form-group">
             <label for="startDate">Start Date</label>
-            <input type="date" id="startDate" >
+            <input type="text" id="startDate" >
+        </div>
+        
+        <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input type="text" id="endDate" >
         </div>
 
         <div class="form-group">
-            <label for="endDate">End Date</label>
-            <input type="date" id="endDate" >
+            <label>จำนวนคนที่ต้องการนัดหมาย (รวมตัวเอง):</label>
+            <input type="number" id="requiredVoters" value="1" min="1">
         </div>
-
-        <label>จำนวนคนที่ต้องการนัดหมาย (รวมตัวเอง):</label>
-        <input type="number" id="requiredVoters" value="1" min="1">
         
         <button id="btnContinue" class="btn-continue">Continue</button>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script type="module" src="createmeetingP.js"></script>
 </body>
 </html>

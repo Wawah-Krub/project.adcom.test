@@ -106,3 +106,21 @@ document.querySelectorAll('button').forEach(btn => {
         this.classList.add('selected');
     });
 });
+
+// เรียกใช้งาน Flatpickr
+
+flatpickr("#startDate", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d/m/Y",
+    minDate: "today",
+    disableMobile: true
+});
+
+flatpickr("#endDate", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d/m/Y",
+    minDate: "today",
+    disableMobile: true
+});
