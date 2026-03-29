@@ -218,7 +218,6 @@ async function refreshVoteTable(roomId) {
     if (error) return;
 
     // 1. ล้าง Class ของคนอื่นออกก่อน (แต่เก็บ Class ที่เรากดเองไว้)
-    // หมายเหตุ: ถ้าคุณอยากให้ Realtime มันทับกันไปเลย ให้ล้างหมดครับ
     document.querySelectorAll('.vote-cell').forEach(cell => {
         cell.classList.remove('voted-other', 'state-1', 'state-2');
         // คืนค่า state-0 (สีขาว) ให้ช่องที่ไม่มีใครโหวต
@@ -227,7 +226,7 @@ async function refreshVoteTable(roomId) {
         }
     });
 
-    // 2. วนลูปข้อมูลโหวตของทุกคน (รวมถึงเพื่อนด้วย)
+    // 2. วนลูปข้อมูลโหวตของทุกคน 
     allVotes.forEach(userVote => {
         const data = userVote.vote_data; 
         
@@ -240,10 +239,10 @@ async function refreshVoteTable(roomId) {
                     const cell = document.getElementById(targetId);
                     
                     if (cell) {
-                        // ระบายสีตาม State ที่เพื่อนส่งมา (1 หรือ 2)
+                        // ระบายสีตาม State ที่เพื่อนส่งมา 
                         cell.classList.remove('state-0');
                         cell.classList.add(`state-${stateFromDB}`);
-                        cell.classList.add('voted-other'); // ใส่ไว้เผื่อแยก CSS
+                        cell.classList.add('voted-other'); 
                     }
                 }
             }
@@ -261,7 +260,7 @@ function setupVoteRealtime(roomId) {
                 event: 'INSERT', 
                 schema: 'public', 
                 table: 'votes', 
-                filter: `meeting_id=eq.${roomId}` // เปลี่ยนเป็น meeting_id
+                filter: `meeting_id=eq.${roomId}` 
             }, 
             (payload) => {
                 console.log('เพื่อนโหวตใหม่!', payload.new);
@@ -272,8 +271,8 @@ function setupVoteRealtime(roomId) {
 }
 
 // เรียกใช้งานตอนโหลดหน้า
-refreshVoteTable(roomId); // โหลดครั้งแรก
-setupVoteRealtime(roomId); // เปิดระบบดักฟัง Realtime
+refreshVoteTable(roomId); 
+setupVoteRealtime(roomId); 
 
 async function handleVote(slotId) {
     const { data: { user } } = await supabase.auth.getUser();
@@ -285,7 +284,4 @@ async function handleVote(slotId) {
             slot_id: slotId,
             user_id: user.id,
         }]);
-    
-    // ไม่ต้องสั่ง render() เองตรงนี้ก็ได้ 
-    // เพราะ Realtime Subscription จะตรวจเจอแล้วสั่ง render ให้เราเองอัตโนมัติ!
 }
