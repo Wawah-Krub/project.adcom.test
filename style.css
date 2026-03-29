@@ -442,7 +442,7 @@ button:hover {
     right: -150px;
     width: 500px;
     height: 500px;
-    background: radial-gradient(circle, rgba(26, 59, 35, 0.7) 0%, rgba(255, 255, 255, 0) 70%);
+    background: radial-gradient(circle, rgba(103, 138, 113, 0.7) 0%, rgba(255, 255, 255, 0) 70%);
     border-radius: 50%;
     pointer-events: none; /* เพื่อให้เรายังคลิกปุ่มผ่านวงกลมได้ */
     z-index: 1;
@@ -455,7 +455,7 @@ button:hover {
     left: -150px;
     width: 450px;
     height: 450px;
-    background: radial-gradient(circle, rgba(50, 67, 53, 0.4) 0%, rgba(140, 4, 4, 0) 70%);
+    background: radial-gradient(circle, rgba(119, 174, 129, 0.4) 0%, rgba(140, 4, 4, 0) 70%);
     border-radius: 50%;
     pointer-events: none;
     z-index: 1;
